@@ -1,6 +1,6 @@
 
 #include <igl/opengl/glfw/Viewer.h>
-
+#include <igl/unproject_onto_mesh.h>
 #include <pybind11/stl.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/eigen.h>
@@ -22,7 +22,7 @@ namespace iglv = igl::opengl::glfw;
 
 void data_list_check(iglv::Viewer& v, int id)
 {
-    if (v.data_list.size() >= id) {
+    if (v.data_list.size() < id) {
         printf("Data list entry not initialized, please \n \
                     add mesh with gpytoolbox.append_mesh(V, F), \n  \
                     or ensure data list has the correct size \n"); 
@@ -55,10 +55,42 @@ void binding_viewer(py::module& m) {
 	py::class_<iglv::Viewer>(m, "viewer")
 		.def(py::init<>())
         // setting mesh
-        .def("set_mesh", [&](iglv::Viewer& v, EigenDRef<MatrixXd> V, EigenDRef<MatrixXi> F, int i) {
-            data_list_check(v, i);
-            v.data_list[i].set_mesh(V, F);
-       	}, py::arg("V"), py::arg("F"), py::arg("id") = 0)
+        .def("set_mesh", [&](iglv::Viewer& v, EigenDRef<MatrixXd> V, EigenDRef<MatrixXi> F, int id=0) {
+            data_list_check(v, id);
+            v.data_list[id].set_mesh(V, F);
+            }, py::arg("V"), py::arg("F"), py::arg("id") = 0)
+
+        .def("set_vertices", [](iglv::Viewer& v, EigenDRef<MatrixXd> V, int id) {
+            data_list_check(v, id);
+            v.data_list[id].set_vertices(V);
+        }, py::arg("V"), py::arg("id")=0)
+        
+        .def("compute_normals", [](iglv::Viewer& v, int id) {
+            data_list_check(v, id);
+            v.data_list[id].compute_normals();
+        }, py::arg("id") = 0)
+
+        .def("set_normals", [](iglv::Viewer& v, EigenDRef<MatrixXd> N, int id) {
+            data_list_check(v, id);
+            v.data_list[id].set_normals(N);
+        }, py::arg("N"), py::arg("id") = 0)
+
+        .def("set_points", [](iglv::Viewer& v, EigenDRef<MatrixXd> P, EigenDRef<MatrixXd> C, int id) {
+            data_list_check(v, id);
+            v.data_list[id].set_points(P, C);
+        }, py::arg("P"), py::arg("C"), py::arg("id") = 0)
+
+
+        .def("set_points", [](iglv::Viewer& v, EigenDRef<MatrixXd> V, EigenDRef<MatrixXi> E, EigenDRef<MatrixXd> C, int id) {
+            data_list_check(v, id);
+            v.data_list[id].set_edges(V, E, C);
+        }, py::arg("V"), py::arg("E"), py::arg("C"), py::arg("id") = 0)
+
+
+        .def("clear", [](iglv::Viewer& v, int id) {
+            v.data_list[id].clear();
+        },  py::arg("id") = 0)
+
 
         .def("append_mesh", [&](iglv::Viewer& v, EigenDRef<MatrixXd> V, EigenDRef<MatrixXi> F) {
             v.append_mesh();
@@ -77,12 +109,20 @@ void binding_viewer(py::module& m) {
             })
         
 
-        .def("set_colors", [&](iglv::Viewer& v, Eigen::RowVector3d& color, int id)
+        .def("set_colors", [&](iglv::Viewer& v, EigenDRef<MatrixXd> color, int id)
         {
             data_list_check(v, id);
-            v.data_list[id].set_colors(color);
+            if (color.size() == 3)
+            {
+                RowVector3d c = Map<RowVector3d>(color.data(),3);
+                v.data_list[id].set_colors(c);
+            }
+            else
+            {
+                v.data_list[id].set_colors(color);
+            }
         }, py::arg("color"), py::arg("id")=0)
-
+ 
 
         .def("set_data", [&](iglv::Viewer& v, Eigen::VectorXd& d, int id,
             std::string colormap, int num_steps)
@@ -101,6 +141,26 @@ void binding_viewer(py::module& m) {
             v.data_list[id].set_data(d, caxis_min, caxis_max, cmap, num_steps );
         }, py::arg("d"), py::arg("caxis_min"), py::arg("caxis_max"), py::arg("id") = 0, 
             py::arg("colormap") = "viridis", py::arg("num_steps") = 21)
+        
+        .def("set_colormap", [&](iglv::Viewer& v, EigenDRef<MatrixXd> CM, int id){
+            data_list_check(v, id);
+            v.data_list[id].set_colormap(CM);
+        }, py::arg("CM"), py::arg("id")=0)
+        
+            
+        .def("use_matcap", [&](iglv::Viewer& v, bool use_matcap, int id){
+            data_list_check(v, id);
+            v.data_list[id].use_matcap = use_matcap;
+        }, py::arg("use_matcap"), py::arg("id")=0)
+
+        .def("show_texture", [&](iglv::Viewer& v, bool show_texture, int id) {
+            data_list_check(v, id);
+            v.data_list[id].show_texture = show_texture;
+        }, py::arg("show_texture"), py::arg("id") = 0)
+
+        
+
+        
 
         //miscallaneous
         .def("show_lines", [&](iglv::Viewer& v, bool show_lines, int id){
@@ -133,6 +193,20 @@ void binding_viewer(py::module& m) {
             v.data_list[id].show_faces = show_faces;
             }, py::arg("show_faces"), py::arg("id") = 0)
 
+        .def("face_based", [&](iglv::Viewer& v, bool face_based, int id) {
+            data_list_check(v, id);
+            v.data_list[id].face_based = face_based;
+        }, py::arg("face_based"), py::arg("id") = 0)
+
+        .def("shininess", [&](iglv::Viewer& v, float shininess, int id) {
+            data_list_check(v, id);
+            v.data_list[id].shininess = shininess;
+        }, py::arg("shininess"), py::arg("id") = 0)
+
+
+
+                
+
        .def("launch", [&](iglv::Viewer& v) 
        	    {v.launch(); })
 		
@@ -148,6 +222,8 @@ void binding_viewer(py::module& m) {
         {
             v.core().camera_zoom = zoom;
         })
+
+
 
         // callbacks
         .def("callback_pre_draw", [&](iglv::Viewer& v, std::function<bool(void)>& func){
@@ -224,14 +300,75 @@ void binding_viewer(py::module& m) {
          })
                 
         .def("callback_mouse_scroll", [&](iglv::Viewer& v, std::function<bool(float)>& func)
+        {
+            auto wrapperFunc = [=](igl::opengl::glfw::Viewer&,float dy) -> bool {
+            return func(dy);
+        };
+        v.callback_mouse_scroll = wrapperFunc;
+        })
+        
+        .def("is_animating", [&](iglv::Viewer& v, bool is_animating)
+        {
+            v.core().is_animating = is_animating;
+        })
+
+        .def("max_fps", [&](iglv::Viewer& v, int max_fps)
+        {
+            v.core().animation_max_fps = max_fps;
+        })
+
+        .def("view", [&](iglv::Viewer& v)
+        {
+            return v.core().view.cast<double>();
+        })
+
+        .def("proj", [&](iglv::Viewer& v)
+        {
+            return v.core().proj.cast<double>();
+        })
+
+        .def("viewport", [&](iglv::Viewer& v)
+        {
+            return v.core().viewport.cast<double>();
+        })
+
+        .def("current_mouse", [&](iglv::Viewer& v)
+        {
+            return Vector2d(v.current_mouse_x, v.current_mouse_y);
+        })
+
+        .def("get_selection", [&](iglv::Viewer& v)
+        {
+            RowVector3f last_mouse  = Eigen::RowVector3f(
+                v.current_mouse_x, v.core().viewport(3) - v.current_mouse_y, 0);
+                // Find closest point on mesh to mouse position
+            int hit_id = -1;
+            int fid;
+            Eigen::Vector3f bary;
+            for (int i = 0; i < v.data_list.size(); i++)
             {
-                auto wrapperFunc = [=](igl::opengl::glfw::Viewer&,float dy) -> bool {
-                return func(dy);
-            };
-            v.callback_mouse_scroll = wrapperFunc;
-            })
+         
+                VectorXd u =
+                    v.data_list[i].V;
 
+                MatrixXd U = Map<MatrixXd>(u.data(), u.rows() / 3, 3);
 
+                MatrixXi F = v.data_list[i].F;
+                if (igl::unproject_onto_mesh(
+                    last_mouse.head(2),
+                    v.core().view,
+                    v.core().proj,
+                    v.core().viewport,
+                    U, F,
+                    fid, bary))
+                {
+                    hit_id = i;
+                    break;
+                }
+            }
+
+            return std::make_tuple(hit_id, fid, bary);
+        });
 
         ;
 

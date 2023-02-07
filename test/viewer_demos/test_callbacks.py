@@ -3,9 +3,8 @@ import gpytoolbox as gpy
 import numpy as np
 
 name = "airplane"
-obj_file = "./data/" + name + "/" + name  +".obj"
+obj_file = "../unit_tests_data/" + name  +".obj"
 [V, F] = gpy.read_mesh(obj_file)
-
 def callback_pre_draw():
     print("callback pre draw")
     return False
