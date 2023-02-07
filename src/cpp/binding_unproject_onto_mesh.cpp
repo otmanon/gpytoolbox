@@ -14,19 +14,17 @@ using EigenDRef = Ref<MatrixType, 0, EigenDStride>; //allows passing column/row 
 void binding_unproject_onto_mesh(py::module& m) {
     m.def("_unproject_onto_mesh", [](EigenDRef<MatrixXd> V,
         EigenDRef<MatrixXd> view, EigenDRef<MatrixXd> proj,
-        VectorXd& viewport)
+        VectorXd& viewport, EigenDRef<MatrixXd> U, EigenDRef<MatrixXi> F )
         {
-            MatrixXd U;
-            MatrixXi F;
-            Vector3d bary;
-            int fid;
+            Vector3d bary = RowVector3d(0, 0, 0);
+            int fid = -1;
 
             MatrixXf Vf = V.cast<float>();
             MatrixXf viewf = view.cast<float>();
             MatrixXf projf = proj.cast<float>();
             VectorXf viewportf = viewport.cast<float>();
             igl::unproject_onto_mesh(Vf, viewf, projf, viewportf, U, F, fid, bary);
-            return std::make_tuple(U, F, fid, bary);
+            return std::make_tuple(fid, bary);
         });
 
 }

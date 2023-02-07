@@ -81,7 +81,7 @@ void binding_viewer(py::module& m) {
         }, py::arg("P"), py::arg("C"), py::arg("id") = 0)
 
 
-        .def("set_points", [](iglv::Viewer& v, EigenDRef<MatrixXd> V, EigenDRef<MatrixXi> E, EigenDRef<MatrixXd> C, int id) {
+        .def("set_lines", [](iglv::Viewer& v, EigenDRef<MatrixXd> V, EigenDRef<MatrixXi> E, EigenDRef<MatrixXd> C, int id) {
             data_list_check(v, id);
             v.data_list[id].set_edges(V, E, C);
         }, py::arg("V"), py::arg("E"), py::arg("C"), py::arg("id") = 0)
@@ -343,14 +343,17 @@ void binding_viewer(py::module& m) {
                 v.current_mouse_x, v.core().viewport(3) - v.current_mouse_y, 0);
                 // Find closest point on mesh to mouse position
             int hit_id = -1;
-            int fid;
-            Eigen::Vector3f bary;
+            int fid = -1;
+            Eigen::Vector3f bary = Vector3f(0, 0, 0);
             for (int i = 0; i < v.data_list.size(); i++)
             {
-         
+                
                 VectorXd u =
                     v.data_list[i].V;
-
+                std::cout << u << std::endl;
+                std::cout << i << std::endl;
+                std::cout << last_mouse << std::endl;
+                
                 MatrixXd U = Map<MatrixXd>(u.data(), u.rows() / 3, 3);
 
                 MatrixXi F = v.data_list[i].F;
@@ -362,12 +365,14 @@ void binding_viewer(py::module& m) {
                     U, F,
                     fid, bary))
                 {
+                    std::cout << "hit!" << std::endl;
                     hit_id = i;
                     break;
                 }
             }
 
-            return std::make_tuple(hit_id, fid, bary);
+            Vector3d baryd = bary.cast<double>();
+            return std::make_tuple(hit_id, fid, baryd);
         });
 
         ;
