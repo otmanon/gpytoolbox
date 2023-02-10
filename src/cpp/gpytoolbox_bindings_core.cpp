@@ -29,7 +29,7 @@ void binding_upper_envelope(py::module& m);
 void binding_unproject(py::module& m);
 void binding_project(py::module& m);
 void binding_unproject_onto_mesh(py::module& m);
-
+void binding_bbw(py::module& m);
 
 PYBIND11_MODULE(gpytoolbox_bindings, m) {
 
@@ -49,11 +49,10 @@ PYBIND11_MODULE(gpytoolbox_bindings, m) {
     binding_write_stl(m);
     binding_remesh_botsch(m);
     binding_upper_envelope(m);
+
     binding_unproject(m);
     binding_project(m);
     binding_unproject_onto_mesh(m);
-   
-
-    m.def("help", [&]() {printf("hi"); });
+    binding_bbw(m);
 }
 

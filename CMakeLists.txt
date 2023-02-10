@@ -98,6 +98,7 @@ pybind11_add_module(gpytoolbox_bindings
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/binding_unproject_onto_mesh.cpp"
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/binding_project.cpp"
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/binding_unproject.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/binding_bbw.cpp"
 )
 
 pybind11_add_module(gpytoolbox_bindings_copyleft
