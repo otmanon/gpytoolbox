@@ -10,7 +10,9 @@ namespace py = pybind11;
 // using EigenDRef = Ref<MatrixType, 0, EigenDStride>; //allows passing column/row order matrices easily
 
 //forward declare all bindings
+
 void binding_viewer(py::module& m);
+
 void binding_read_obj(py::module& m);
 void binding_write_obj(py::module& m);
 void binding_decimate(py::module& m);
@@ -26,17 +28,21 @@ void binding_write_stl(py::module& m);
 void binding_remesh_botsch(py::module& m);
 void binding_upper_envelope(py::module& m);
 
+<<<<<<< HEAD
 void binding_unproject(py::module& m);
 void binding_project(py::module& m);
 void binding_unproject_onto_mesh(py::module& m);
 void binding_bbw(py::module& m);
 
+=======
+>>>>>>> 0a6e8b7f63fd1ca2401ffc4396d185885a250080
 PYBIND11_MODULE(gpytoolbox_bindings, m) {
 
     /// call all bindings declared above  
     binding_read_obj(m);
     binding_write_obj(m);
-    binding_viewer(m);
+
+
     binding_decimate(m);
     binding_fast_winding_number(m);
     binding_hausdorff_distance(m);
@@ -50,6 +56,7 @@ PYBIND11_MODULE(gpytoolbox_bindings, m) {
     binding_remesh_botsch(m);
     binding_upper_envelope(m);
 
+    binding_viewer(m);
     binding_unproject(m);
     binding_project(m);
     binding_unproject_onto_mesh(m);

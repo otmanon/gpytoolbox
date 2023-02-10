@@ -80,6 +80,7 @@ target_link_libraries(cpytoolbox_copyleft igl::core igl_copyleft::cgal)
 add_subdirectory(./ext/pybind11/)
 pybind11_add_module(gpytoolbox_bindings
     "${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/gpytoolbox_bindings_core.cpp"
+
     "${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/binding_viewer.cpp"
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/binding_read_obj.cpp"
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/binding_write_obj.cpp"
@@ -95,17 +96,18 @@ pybind11_add_module(gpytoolbox_bindings
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/binding_write_stl.cpp"
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/binding_remesher_botsch.cpp"
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/binding_upper_envelope.cpp"
+
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/binding_unproject_onto_mesh.cpp"
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/binding_project.cpp"
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/binding_unproject.cpp"
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/binding_bbw.cpp"
-)
 
 pybind11_add_module(gpytoolbox_bindings_copyleft
     "${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/gpytoolbox_bindings_copyleft_core.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/binding_swept_volume.cpp"
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/binding_booleans.cpp"
 )
+
 
 target_link_libraries(gpytoolbox_bindings PUBLIC cpytoolbox igl::core igl::glfw igl::imgui)
 target_link_libraries(gpytoolbox_bindings_copyleft PUBLIC cpytoolbox_copyleft igl::core igl_copyleft::cgal)
