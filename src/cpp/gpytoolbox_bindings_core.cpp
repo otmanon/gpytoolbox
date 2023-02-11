@@ -28,14 +28,11 @@ void binding_write_stl(py::module& m);
 void binding_remesh_botsch(py::module& m);
 void binding_upper_envelope(py::module& m);
 
-<<<<<<< HEAD
 void binding_unproject(py::module& m);
 void binding_project(py::module& m);
 void binding_unproject_onto_mesh(py::module& m);
 void binding_bbw(py::module& m);
 
-=======
->>>>>>> 0a6e8b7f63fd1ca2401ffc4396d185885a250080
 PYBIND11_MODULE(gpytoolbox_bindings, m) {
 
     /// call all bindings declared above  

@@ -101,6 +101,7 @@ pybind11_add_module(gpytoolbox_bindings
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/binding_project.cpp"
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/binding_unproject.cpp"
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/binding_bbw.cpp"
+	)
 
 pybind11_add_module(gpytoolbox_bindings_copyleft
     "${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/gpytoolbox_bindings_copyleft_core.cpp"
@@ -109,7 +110,7 @@ pybind11_add_module(gpytoolbox_bindings_copyleft
 )
 
 
-target_link_libraries(gpytoolbox_bindings PUBLIC cpytoolbox igl::core igl::glfw igl::imgui)
+target_link_libraries(gpytoolbox_bindings PUBLIC cpytoolbox igl::core igl::glfw igl::imgui igl::png)
 target_link_libraries(gpytoolbox_bindings_copyleft PUBLIC cpytoolbox_copyleft igl::core igl_copyleft::cgal)
 
 target_include_directories(gpytoolbox_bindings PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/")

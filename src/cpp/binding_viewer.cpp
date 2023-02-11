@@ -1,6 +1,9 @@
 
 #include <igl/opengl/glfw/Viewer.h>
-#include <igl/unproject_onto_mesh.h>
+#include <igl/png/readPNG.h>
+
+#include <igl/opengl/glfw/imgui/ImGuizmoWidget.h>
+
 #include <pybind11/stl.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/eigen.h>
@@ -203,9 +206,65 @@ void binding_viewer(py::module& m) {
             v.data_list[id].shininess = shininess;
         }, py::arg("shininess"), py::arg("id") = 0)
 
+ 
+
+    
+        .def("F_material_ambient", [&](iglv::Viewer& v, EigenDRef<MatrixXd> F_material_ambient, int id) {
+            data_list_check(v, id);
+            v.data_list[id].F_material_ambient = F_material_ambient;
+        }, py::arg("F_material_ambient"), py::arg("id") = 0)
+
+        .def("F_material_specular", [&](iglv::Viewer& v, EigenDRef<MatrixXd> F_material_specular, int id) {
+            data_list_check(v, id);
+            v.data_list[id].F_material_specular = F_material_specular;
+        }, py::arg("F_material_specular"), py::arg("id") = 0)
+
+        .def("F_material_diffuse", [&](iglv::Viewer& v, EigenDRef<MatrixXd> F_material_diffuse, int id) {
+            data_list_check(v, id);
+            v.data_list[id].F_material_diffuse = F_material_diffuse;
+         }, py::arg("F_material_diffuse"), py::arg("id") = 0)
+
+        .def("V_material_ambient", [&](iglv::Viewer& v, EigenDRef<MatrixXd> V_material_ambient, int id) {
+            data_list_check(v, id);
+            v.data_list[id].F_material_ambient = V_material_ambient;
+        }, py::arg("V_material_ambient"), py::arg("id") = 0)
+
+        .def("V_material_specular", [&](iglv::Viewer& v, EigenDRef<MatrixXd> V_material_specular, int id) {
+            data_list_check(v, id);
+            v.data_list[id].F_material_specular = V_material_specular;
+        }, py::arg("V_material_specular"), py::arg("id") = 0)
+
+        .def("V_material_diffuse", [&](iglv::Viewer& v, EigenDRef<MatrixXd> V_material_diffuse, int id) {
+            data_list_check(v, id);
+            v.data_list[id].F_material_diffuse = V_material_diffuse;
+         }, py::arg("V_material_diffuse"), py::arg("id") = 0)
+
+        .def("set_uv", [&](iglv::Viewer& v, EigenDRef<MatrixXd> V_UV, int id) {
+            data_list_check(v, id);
+            v.data_list[id].set_uv(V_UV);
+         }, py::arg("V_UV"), py::arg("id") = 0)
+
+        .def("set_uv", [&](iglv::Viewer& v, EigenDRef<MatrixXd> V_UV, EigenDRef<MatrixXi> F_UV, int id) {
+            data_list_check(v, id);
+            v.data_list[id].set_uv(V_UV, F_UV);
+         }, py::arg("V_UV"), py::arg("F_UV"), py::arg("id") = 0)
 
 
-                
+        .def("set_texture", [&](iglv::Viewer& v, std::string texture_png, int id)
+         {
+            data_list_check(v, id);
+            Eigen::Matrix<unsigned char, -1, -1> R, G, B, A;
+            igl::png::readPNG(texture_png, R, G, B, A);
+            v.data_list[id].set_texture(R, G, B, A);
+            v.data_list[id].set_colors(RowVector3d(1, 1, 1));
+         }, py::arg("texture_png"), py::arg("id") = 0)
+
+         .def("show_texture", [&](iglv::Viewer& v, bool show_texture, int id)
+         {
+                data_list_check(v, id);
+                v.data_list[id].show_texture = show_texture;
+         }, py::arg("show_texture"), py::arg("id") = 0)
+           
 
        .def("launch", [&](iglv::Viewer& v) 
        	    {v.launch(); })
@@ -216,14 +275,14 @@ void binding_viewer(py::module& m) {
         {
             v.core().camera_eye = eye.cast<float>();
             v.core().camera_center = center.cast<float>();
+            v.core().camera_base_translation = center.cast<float>();
         })
 
         .def("zoom", [&](iglv::Viewer& v, double zoom)
         {
             v.core().camera_zoom = zoom;
+            
         })
-
-
 
         // callbacks
         .def("callback_pre_draw", [&](iglv::Viewer& v, std::function<bool(void)>& func){
@@ -322,6 +381,30 @@ void binding_viewer(py::module& m) {
             return v.core().view.cast<double>();
         })
 
+        //lighting
+        .def("is_shadow_mapping", [&](iglv::Viewer& v, bool is_shadow_mapping)
+        {
+            v.core().is_shadow_mapping = is_shadow_mapping;
+        })
+
+       .def("lighting_factor", [&](iglv::Viewer& v, double lighting_factor)
+        {
+            v.core().lighting_factor = (float)lighting_factor;
+        })
+
+        .def("light_position", [&](iglv::Viewer& v, VectorXd& light_position)
+        {
+            v.core().light_position = light_position.cast<float>();
+        })
+
+
+        .def("is_directional_light", [&](iglv::Viewer& v, bool is_directional_light)
+        {
+            v.core().is_directional_light = is_directional_light;
+        })
+
+
+
         .def("proj", [&](iglv::Viewer& v)
         {
             return v.core().proj.cast<double>();
@@ -337,43 +420,76 @@ void binding_viewer(py::module& m) {
             return Vector2d(v.current_mouse_x, v.current_mouse_y);
         })
 
-        .def("get_selection", [&](iglv::Viewer& v)
-        {
-            RowVector3f last_mouse  = Eigen::RowVector3f(
-                v.current_mouse_x, v.core().viewport(3) - v.current_mouse_y, 0);
-                // Find closest point on mesh to mouse position
-            int hit_id = -1;
-            int fid = -1;
-            Eigen::Vector3f bary = Vector3f(0, 0, 0);
-            for (int i = 0; i < v.data_list.size(); i++)
+        //Widgets
+        .def("attach_guizmo", [&](iglv::Viewer& v, bool visible, EigenDRef<Matrix4d> A0, std::function<void(const Matrix4d&)> func, std::string operation){
+           
+            igl::opengl::glfw::imgui::ImGuiPlugin* plugin;
+            if (v.plugins.size() < 1)
             {
-                
-                VectorXd u =
-                    v.data_list[i].V;
-                std::cout << u << std::endl;
-                std::cout << i << std::endl;
-                std::cout << last_mouse << std::endl;
-                
-                MatrixXd U = Map<MatrixXd>(u.data(), u.rows() / 3, 3);
-
-                MatrixXi F = v.data_list[i].F;
-                if (igl::unproject_onto_mesh(
-                    last_mouse.head(2),
-                    v.core().view,
-                    v.core().proj,
-                    v.core().viewport,
-                    U, F,
-                    fid, bary))
-                {
-                    std::cout << "hit!" << std::endl;
-                    hit_id = i;
-                    break;
-                }
+                plugin = new igl::opengl::glfw::imgui::ImGuiPlugin();
+                v.plugins.push_back(plugin);
             }
 
-            Vector3d baryd = bary.cast<double>();
-            return std::make_tuple(hit_id, fid, baryd);
-        });
+            igl::opengl::glfw::imgui::ImGuizmoWidget * guizmo = new igl::opengl::glfw::imgui::ImGuizmoWidget();
+            plugin->widgets.push_back(guizmo);
+            guizmo->visible = false;
+      
+          
+            guizmo->visible = visible;
+            guizmo->T = A0.cast<float>();
+   
+            auto wrapperFunc = [=](const Matrix4f& A) {
+                Matrix4d Ad = A.cast<double>();
+                func(Ad);
+            };
+            guizmo->callback = wrapperFunc;
+
+            if (operation == "scale")
+                guizmo->operation = ImGuizmo::SCALE;
+            if (operation == "translate")
+                guizmo->operation = ImGuizmo::TRANSLATE;
+            if (operation == "rotate")
+                guizmo->operation = ImGuizmo::ROTATE;
+           
+        })
+
+        //.def("get_selection", [&](iglv::Viewer& v)
+        //{
+        //    RowVector3f last_mouse  = Eigen::RowVector3f(
+        //        v.current_mouse_x, v.core().viewport(3) - v.current_mouse_y, 0);
+        //        // Find closest point on mesh to mouse position
+        //    int hit_id = -1;
+        //    int fid = -1;
+        //    Eigen::Vector3f bary = Vector3f(0, 0, 0);
+        //    for (int i = 0; i < v.data_list.size(); i++)
+        //    {
+        //        
+        //        VectorXd u =
+        //            v.data_list[i].V;
+        //        std::cout << u << std::endl;
+        //        std::cout << i << std::endl;
+        //        std::cout << last_mouse << std::endl;
+        //        
+        //        MatrixXd U = Map<MatrixXd>(u.data(), u.rows() / 3, 3);
+
+        //        MatrixXi F = v.data_list[i].F;
+        //        if (igl::unproject_onto_mesh(
+        //            last_mouse.head(2),
+        //            v.core().view,
+        //            v.core().proj,
+        //            v.core().viewport,
+        //            U, F,
+        //            fid, bary))
+        //        {
+        //            std::cout << "hit!" << std::endl;
+        //            hit_id = i;
+        //            break;
+        //        }
+        //    }
+
+        //    Vector3d baryd = bary.cast<double>();
+        //    return std::make_tuple(hit_id, fid, baryd);
+        //});
 
         ;
 

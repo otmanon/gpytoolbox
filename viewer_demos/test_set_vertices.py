@@ -3,7 +3,7 @@ import gpytoolbox as gpy
 import numpy as np
 
 name = "armadillo"
-obj_file = "../unit_tests_data/" + name  +".obj"
+obj_file = "./unit_tests_data/" + name  +".obj"
 [V, F] = gpy.read_mesh(obj_file)
 step = 0
 
