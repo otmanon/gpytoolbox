@@ -101,6 +101,7 @@ pybind11_add_module(gpytoolbox_bindings
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/binding_project.cpp"
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/binding_unproject.cpp"
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/binding_bbw.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/binding_lbs_matrix.cpp"
 	)
 
 pybind11_add_module(gpytoolbox_bindings_copyleft
