@@ -20,6 +20,8 @@ option(LIBIGL_EMBREE "Build target igl::embree" ON)
 option(LIBIGL_PNG  "Build target igl::png"  ON)
 option(LIBIGL_GLFW "Build target igl::glfw" ON)
 option(LIBIGL_IMGUI   "Build target igl::imgui" ON)
+option(LIBIGL_IMGUI   "Build target igl::imgui" ON)
+option(LIBIGL_RESTRICTED_MATLAB   "Build target igl_restricted::matlab" ON)
 include(libigl)
 
 add_library(cpytoolbox
@@ -76,7 +78,6 @@ add_library(cpytoolbox
 target_link_libraries(cpytoolbox igl::core igl::embree )
 target_link_libraries(cpytoolbox_copyleft igl::core igl_copyleft::cgal)
 
-# Otman's python bindings using pybind11
 add_subdirectory(./ext/pybind11/)
 pybind11_add_module(gpytoolbox_bindings
     "${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/gpytoolbox_bindings_core.cpp"
@@ -109,6 +110,8 @@ pybind11_add_module(gpytoolbox_bindings_copyleft
     "${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/binding_swept_volume.cpp"
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/binding_booleans.cpp"
 )
+
+add_subdirectory(./ext/fast_cd)
 
 
 target_link_libraries(gpytoolbox_bindings PUBLIC cpytoolbox igl::core igl::glfw igl::imgui igl::png)

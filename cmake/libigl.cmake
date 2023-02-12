@@ -1,4 +1,4 @@
-if(TARGET igl::core)
+if(TARGET igl_restricted::matlab)
     return()
 endif()
 

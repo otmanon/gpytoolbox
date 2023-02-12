@@ -38,7 +38,7 @@ v.set_texture(png_file)
 v.show_texture(True)
 
 W = np.ones((V.shape[0], 1))
-J = _lbs_matrix(V, W, dim=1)
+J = _lbs_matrix(V, W)
 def guizmo_callback(T):
     # print("guizmo Transform : ", T)
     P = T[0:3, :4]

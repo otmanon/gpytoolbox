@@ -14,16 +14,12 @@ using EigenDRef = Ref<MatrixType, 0, EigenDStride>; //allows passing column/row 
 
 void binding_lbs_matrix(py::module& m) {
     m.def("_lbs_matrix", [](EigenDRef<MatrixXd> V,
-        EigenDRef<MatrixXd> W, int dim)
+        EigenDRef<MatrixXd> W)
         {
             MatrixXd M;
             igl::lbs_matrix_column(V, W, M);
-            if (dim > 1)
-            {
-                M = igl::repdiag(M, dim);
-            }
             return M;
-        }, py::arg("V"), py::arg("W"), py::arg("dim") = 1);
+        }, py::arg("V"), py::arg("W"));
 
 }
 

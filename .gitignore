@@ -16,3 +16,5 @@ dist/*
 src/gpytoolbox.egg-info/*
 *.pyd
 *.egg-info
+
+ext/fast_cd/*
